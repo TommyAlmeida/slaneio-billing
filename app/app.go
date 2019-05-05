@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"log"
+	"net/http"
 )
 
 type App struct {
@@ -22,7 +23,6 @@ func (a *App) Initialize (config * config.Config){
 		config.DB.Port,
 		config.DB.Name)
 
-	//TODO: Open connection
 	db, err := gorm.Open(config.DB.Dialect, dbURI)
 	if err != nil {
 		log.Fatal("Could not connect database")
@@ -32,6 +32,6 @@ func (a *App) Initialize (config * config.Config){
 	a.Router = mux.NewRouter()
 }
 
-func (a *App) Run(s string) {
-
+func (a *App) Run(host string) {
+	log.Fatal(http.ListenAndServe(host, a.Router))
 }
