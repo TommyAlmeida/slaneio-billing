@@ -2,22 +2,26 @@ package model
 
 import (
 	"github.com/jinzhu/gorm"
-	"math/big"
 )
 
 type QuantityType struct {
-	Name string
-	Value big.Rat
+	gorm.Model
+	Name  string
+	Code  string
+	Value float64 `gorm:"default:0"`
 }
 
 type Product struct {
-	Title string `json:"status"`
-	Active string `json:"active"`
-	QuantityType QuantityType `json:"active"`
-	Status string `gorm:"type:ENUM( 'Not Payed', 'Declined', 'Disabled', 'Processing', 'On Hold', 'Complete');default:'0'" json:"status"`
+	gorm.Model
+	Title        string       `json:"status"`
+	Active       string       `json:"active"`
+	QuantityType QuantityType `gorm:"foreignkey:QuantityType" json:"quantityType"`
+	Status       string       `gorm:"type:ENUM( 'Not Payed', 'Declined', 'Disabled', 'Processing', 'On Hold', 'Complete');default:'0'" json:"status"`
 }
 
 func DBMigrate(db *gorm.DB) *gorm.DB {
-	db.AutoMigrate(&Product{})
+	db.AutoMigrate(&Product{}, &QuantityType{})
+	db.Model(&Product{}).Related(&QuantityType{})
+
 	return db
 }
