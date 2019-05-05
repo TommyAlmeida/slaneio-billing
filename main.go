@@ -1,4 +1,4 @@
-package billing
+package main
 
 import (
 	"gamestash.io/billing/app"
