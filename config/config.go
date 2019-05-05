@@ -7,20 +7,20 @@ type Config struct {
 type DBConfig struct {
 	Dialect  string
 	Host     string
-	Port     int
+	Port     uint16
 	Username string
 	Password string
 	Name     string
 }
 
-func GetConfig() *Config {
+func NewConfig() *Config {
 	return &Config{
 		DB: &DBConfig{
 			Dialect:  "mysql",
 			Host:     "127.0.0.1",
 			Port:     3306,
 			Username: "root",
-			Password: "",
+			Password: "tomas001A..",
 			Name:     "gamestash_billing",
 		},
 	}
