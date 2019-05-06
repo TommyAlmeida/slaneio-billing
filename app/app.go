@@ -12,7 +12,7 @@ import (
 )
 
 type App struct {
-	BillingRouter BillingRouter
+	BillingRouter *BillingRouter
 	DB            *gorm.DB
 }
 
@@ -32,10 +32,11 @@ func (a *App) Initialize(config *config.Config) {
 
 	a.DB = model.DBMigrate(db)
 
-	a.BillingRouter = BillingRouter{
+	a.BillingRouter = &BillingRouter{
 		mux.NewRouter(),
 		a.DB,
 	}
+	
 	a.BillingRouter.registerRoutes()
 }
 
