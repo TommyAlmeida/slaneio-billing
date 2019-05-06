@@ -12,8 +12,8 @@ import (
 )
 
 type App struct {
-	Router *mux.Router
-	DB     *gorm.DB
+	BillingRouter BillingRouter
+	DB            *gorm.DB
 }
 
 func (a *App) Initialize(config *config.Config) {
@@ -25,14 +25,20 @@ func (a *App) Initialize(config *config.Config) {
 	println(dbURI)
 
 	db, err := gorm.Open(config.DB.Dialect, dbURI)
+
 	if err != nil {
-		log.Fatal("Could not connect database")
+		log.Fatalf("Could not connect database, %s", err)
 	}
 
 	a.DB = model.DBMigrate(db)
-	a.Router = mux.NewRouter()
+
+	a.BillingRouter = BillingRouter{
+		mux.NewRouter(),
+		a.DB,
+	}
+	a.BillingRouter.registerRoutes()
 }
 
 func (a *App) Run(host string) {
-	log.Fatal(http.ListenAndServe(host, a.Router))
+	log.Fatal(http.ListenAndServe(host, a.BillingRouter.Router))
 }

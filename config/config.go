@@ -20,7 +20,7 @@ func NewConfig() *Config {
 			Host:     "127.0.0.1",
 			Port:     3306,
 			Username: "root",
-			Password: "tomas001A..",
+			Password: "",
 			Name:     "gamestash_billing",
 		},
 	}
