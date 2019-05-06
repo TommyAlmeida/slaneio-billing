@@ -1,4 +1,4 @@
-package handler
+package controllers
 
 import (
 	"gamestash.io/billing/app/model"

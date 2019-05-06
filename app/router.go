@@ -1,7 +1,7 @@
 package app
 
 import (
-	"gamestash.io/billing/app/handler"
+	"gamestash.io/billing/app/controllers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"net/http"
@@ -16,7 +16,7 @@ func (br *BillingRouter) registerRoutes(){
 }
 
 func (br *BillingRouter) GetProducts(w http.ResponseWriter, r *http.Request) {
-	handler.GetAllProducts(br.DB, w)
+	controllers.GetAllProducts(br.DB, w)
 }
 
 func (br *BillingRouter) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
