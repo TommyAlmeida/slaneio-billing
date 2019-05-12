@@ -7,7 +7,7 @@ import (
 
 func Inject(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set("database", db)
+		c.Set("db", db)
 		c.Next()
 	}
 }

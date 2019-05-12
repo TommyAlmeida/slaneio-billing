@@ -2,22 +2,22 @@ package main
 
 import (
 	"fmt"
+	"gamestash.io/billing/api"
 	"gamestash.io/billing/api/middlewares"
 	"gamestash.io/billing/database"
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"os"
 )
 
 func main() {
-	// load .env environment variables
-	err := godotenv.Load()
+	pwd, _ := os.Getwd()
+	err := godotenv.Load(pwd + "/.env")
+
 	if err != nil {
 		panic(err)
 	}
-
-	// initializes database
+	
 	db, _ := database.Initialize()
 
 	port := os.Getenv("PORT")
@@ -28,5 +28,7 @@ func main() {
 	if len(port) <= 0 || port == "" {
 		fmt.Printf("Could not connect to port %s", port)
 	}
+
+	api.ApplyRoutes(app)
 	app.Run(":" + port)
 }

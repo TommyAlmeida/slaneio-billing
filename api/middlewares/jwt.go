@@ -50,16 +50,16 @@ func validateToken(tokenString string) (common.JSON, error) {
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString, err := c.Cookie("token")
-		// failed to read cookie
 		if err != nil {
-			// try reading HTTP Header
 			authorization := c.Request.Header.Get("Authorization")
+
 			if authorization == "" {
 				c.Next()
 				return
 			}
+
 			sp := strings.Split(authorization, "Bearer ")
-			// invalid token
+
 			if len(sp) < 1 {
 				c.Next()
 				return
