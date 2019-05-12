@@ -30,5 +30,6 @@ func main() {
 	}
 
 	api.ApplyRoutes(app)
-	app.Run(":" + port)
+
+	_ = app.Run(":" + port)
 }

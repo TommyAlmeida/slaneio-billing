@@ -88,8 +88,18 @@ func register(c *gin.Context) {
 		PasswordHash: hash,
 	}
 
+	//Create a user wallet such is required
+	wallet := models.Wallet{
+		Amount: 0,
+		Owner: user,
+	}
+
 	db.NewRecord(user)
 	db.Create(&user)
+
+	//Create new wallet on the database
+	db.NewRecord(wallet)
+	db.Create(&wallet)
 
 	serialized := user.Serialize()
 	token, _ := generateToken(serialized)
@@ -97,10 +107,16 @@ func register(c *gin.Context) {
 	const maxAge = 60 * 60 * 24 * 7 //7 days
 	c.SetCookie("token", token, maxAge , "/", "", false, true)
 
-	c.JSON(http.StatusOK, common.JSON{
-		"user":  user.Serialize(),
+
+	response := common.JSON{
 		"token": token,
-	})
+		"data":  common.JSON{
+			"user": user.Serialize(),
+			"wallet": wallet.Serialize(),
+		},
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func login(c *gin.Context) {
