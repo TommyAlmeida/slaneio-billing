@@ -2,6 +2,7 @@ package apiv1
 
 import (
 	"gamestash.io/billing/api/v1.0/auth"
+	"gamestash.io/billing/api/v1.0/wallet"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,5 +18,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	{
 		v1.GET("/ping", ping)
 		auth.ApplyRoutes(v1)
+		wallet.ApplyRoutes(v1)
 	}
 }

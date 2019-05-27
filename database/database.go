@@ -18,6 +18,7 @@ func Initialize() (*gorm.DB, error) {
 	}
 
 	fmt.Println("Connected to database")
+
 	models.Migrate(db)
 	return db, err
 }

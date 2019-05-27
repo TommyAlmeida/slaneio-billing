@@ -91,17 +91,16 @@ func register(c *gin.Context) {
 	//Create a user wallet such is required
 	wallet := models.Wallet{
 		Amount: 0,
-		Owner: user,
 	}
 
 	db.NewRecord(user)
-	db.Create(&user)
+	db.Create(user)
 
 	//Create new wallet on the database
 	db.NewRecord(wallet)
-	db.Create(&wallet)
+	db.Create(wallet)
 
-	db.Model(&user).Update("wallet", &wallet)
+	db.Model(user).Update("wallet", wallet)
 
 	serialized := user.Serialize()
 	token, _ := generateToken(serialized)

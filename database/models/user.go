@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"gamestash.io/billing/api/common"
 	"github.com/jinzhu/gorm"
 )
@@ -10,9 +11,11 @@ type User struct {
 	gorm.Model
 	FirstName    string
 	LastName     string
-	Email        string
+	Email        string `sql:"unique"`
 	PasswordHash string
-	Wallet       *Wallet
+
+	Wallet    Wallet
+	WalletId  sql.NullInt64
 }
 
 func (u *User) Serialize() common.JSON {
@@ -21,6 +24,7 @@ func (u *User) Serialize() common.JSON {
 		"email":      u.Email,
 		"first_name": u.FirstName,
 		"last_name":  u.LastName,
+		"wallet": u.Wallet,
 	}
 }
 

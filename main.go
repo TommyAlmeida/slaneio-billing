@@ -25,6 +25,10 @@ func main() {
 	app.Use(database.Inject(db))
 	app.Use(middlewares.JWTMiddleware())
 
+	debugMode := os.Getenv("DEBUG")
+
+	fmt.Println(debugMode)
+
 	if os.Getenv("DEBUG") == "FALSE" {
 		gin.SetMode(gin.ReleaseMode)
 	}
