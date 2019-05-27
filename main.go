@@ -25,6 +25,10 @@ func main() {
 	app.Use(database.Inject(db))
 	app.Use(middlewares.JWTMiddleware())
 
+	if os.Getenv("DEBUG") == "FALSE" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	if len(port) <= 0 || port == "" {
 		fmt.Printf("Could not connect to port %s", port)
 	}

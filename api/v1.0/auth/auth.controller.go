@@ -101,6 +101,8 @@ func register(c *gin.Context) {
 	db.NewRecord(wallet)
 	db.Create(&wallet)
 
+	db.Model(&user).Update("wallet", &wallet)
+
 	serialized := user.Serialize()
 	token, _ := generateToken(serialized)
 

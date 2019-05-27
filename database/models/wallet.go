@@ -9,7 +9,6 @@ type Wallet struct {
 	gorm.Model
 	Amount float64
 	Owner   User   `gorm:"foreignkey:OwnerID"`
-	OwnerID uint
 	//TODO: Add transactions
 }
 

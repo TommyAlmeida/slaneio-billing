@@ -8,18 +8,19 @@ import (
 // User data model
 type User struct {
 	gorm.Model
-	FirstName     string
+	FirstName    string
 	LastName     string
-	Email     string
+	Email        string
 	PasswordHash string
+	Wallet       *Wallet
 }
 
 func (u *User) Serialize() common.JSON {
 	return common.JSON{
-		"id":           u.ID,
-		"email":     u.Email,
+		"id":         u.ID,
+		"email":      u.Email,
 		"first_name": u.FirstName,
-		"last_name": u.LastName,
+		"last_name":  u.LastName,
 	}
 }
 

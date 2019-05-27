@@ -1,11 +1,13 @@
 package wallet
 
 import (
+	"fmt"
+	"net/http"
+
 	"gamestash.io/billing/api/common"
 	"gamestash.io/billing/database/models"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"net/http"
 )
 
 type Wallet = models.Wallet
@@ -13,7 +15,7 @@ type User = models.User
 type JSON = common.JSON
 
 type WithdrawlDepositBody struct {
-	Id int `json:"id" binding:"required"`
+	Id     uint     `json:"id" binding:"required"`
 	Amount float64 `json:"amount" binding:"required"`
 }
 
@@ -23,7 +25,7 @@ func getBalance(c *gin.Context) {
 
 	var wallet Wallet
 
-	if err := db.Set("gorm:auto_preload", true).Where("ownerId = ?", ownerId).First(&wallet).Error; err != nil {
+	if err := db.Set("gorm:auto_preload", true).Where("owner_i d = ?", ownerId).First(&wallet).Error; err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -31,29 +33,27 @@ func getBalance(c *gin.Context) {
 	c.JSON(http.StatusOK, wallet.Serialize())
 }
 
-func GetWalletById(c *gin.Context, id int) (Wallet, error) {
+func GetWalletById(c *gin.Context, id uint) (*Wallet, error) {
 	db := c.MustGet("db").(*gorm.DB)
 
 	var exists Wallet
 
-	if err := db.Where("id = ?", id).First(&exists).Error; err == nil{
+	if err := db.Where("id = ?", id).First(&exists).Error; err == nil {
 		return nil, fmt.Errorf("Could not find wallet with id %d", id)
 	}
 
-	return exists, nil
+	return &exists, nil
 }
 
 func withdrawal(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
 	var body WithdrawlDepositBody
 
-	if err := c.BindJSON(&body); err != nil{
+	if err := c.BindJSON(&body); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	wallet, err := GetWalletById(body.Id)
+	wallet, err := GetWalletById(c, body.Id)
 
 	if err != nil {
 		c.JSON(http.StatusConflict, common.JSON{
@@ -62,7 +62,9 @@ func withdrawal(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Wallet %+T", wallet)
+	c.JSON(http.StatusOK, common.JSON{
+		"data": wallet.Serialize(),
+	})
 }
 
 func deposit(c *gin.Context) {
@@ -75,5 +77,27 @@ func deposit(c *gin.Context) {
 		return
 	}
 
-	var exists
+	wallet, err := GetWalletById(c, body.Id)
+
+	if err != nil {
+		c.JSON(http.StatusConflict, common.JSON{
+			"message": "Could not find wallet with id " + string(body.Id),
+		})
+		return
+	}
+
+	db.Model(&wallet).Update("amount", body.Id)
+
+	updated, err := GetWalletById(c, wallet.ID)
+
+	if err != nil {
+		c.JSON(http.StatusConflict, common.JSON{
+			"message": "Could not find wallet with id " + string(body.Id),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, common.JSON{
+		"data": updated.Serialize(),
+	})
 }
