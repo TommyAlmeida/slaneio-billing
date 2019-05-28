@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"gamestash.io/billing/api/common"
+	"gamestash.io/billing/api/structs"
 	services "gamestash.io/billing/api/v1.0/user"
 	"gamestash.io/billing/database/models"
 	"github.com/dgrijalva/jwt-go"
@@ -16,11 +17,7 @@ import (
 )
 
 type User = models.User
-
-func hash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
-	return string(bytes), err
-}
+type UserRequestBody = structs.UserRequestBody
 
 func checkHash(password string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
@@ -51,21 +48,14 @@ func generateToken(data common.JSON) (string, error) {
 func register(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 
-	type RequestBody struct {
-		FirstName    string `json:"first_name" binding:"required"`
-		LastName string `json:"last_name" binding:"required"`
-		Email string `json:"email" binding:"required"`
-		Password    string `json:"password" binding:"required"`
-	}
-
-	var body RequestBody
+	var body UserRequestBody
 
 	if err := c.BindJSON(&body); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	// check existancy
+	// check if exists
 	_, err := services.GetInstance(c).GetByEmail(body.Email)
 
 	if err != nil {
@@ -75,33 +65,19 @@ func register(c *gin.Context) {
 		return
 	}
 
-	hash, hashErr := hash(body.Password)
-	if hashErr != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
 	// create user
-	user := User{
-		FirstName:     body.FirstName,
-		LastName:  body.LastName,
-		Email:  body.Email,
-		PasswordHash: hash,
-	}
+	user, err := services.GetInstance(c).Create(body)
 
-	//Create a user wallet such is required
-	wallet := models.Wallet{
-		Amount: 0,
+	if err != nil {
+		c.JSON(http.StatusConflict, common.JSON{
+			"message": "Could not create user",
+		})
+
+		return
 	}
 
 	db.NewRecord(user)
 	db.Create(user)
-
-	//Create new wallet on the database
-	db.NewRecord(wallet)
-	db.Create(wallet)
-
-	db.Model(user).Update("wallet", wallet)
 
 	serialized := user.Serialize()
 	token, _ := generateToken(serialized)
@@ -109,12 +85,10 @@ func register(c *gin.Context) {
 	const maxAge = 60 * 60 * 24 * 7 //7 days
 	c.SetCookie("token", token, maxAge , "/", "", false, true)
 
-
 	response := common.JSON{
 		"token": token,
 		"data":  common.JSON{
 			"user": user.Serialize(),
-			"wallet": wallet.Serialize(),
 		},
 	}
 
@@ -122,8 +96,6 @@ func register(c *gin.Context) {
 }
 
 func login(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
 	type RequestBody struct {
 		Email string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required"`
