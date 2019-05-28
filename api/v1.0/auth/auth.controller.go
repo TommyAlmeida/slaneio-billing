@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"gamestash.io/billing/api/common"
+	services "gamestash.io/billing/api/v1.0/user"
 	"gamestash.io/billing/database/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -65,9 +66,9 @@ func register(c *gin.Context) {
 	}
 
 	// check existancy
-	var exists User
+	_, err := services.GetInstance(c).GetByEmail(body.Email)
 
-	if err := db.Where("email = ?", body.Email).First(&exists).Error; err == nil {
+	if err != nil {
 		c.JSON(http.StatusConflict, common.JSON{
 			"message": "Could not create user, email already exists!",
 		})
@@ -135,9 +136,12 @@ func login(c *gin.Context) {
 	}
 
 	// check existancy
-	var user User
-	if err := db.Where("email = ?", body.Email).First(&user).Error; err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
+	user, err := services.GetInstance(c).GetByEmail(body.Email)
+
+	if err != nil {
+		c.JSON(http.StatusConflict, common.JSON{
+			"message": "Could not create user, email already exists!",
+		})
 		return
 	}
 
